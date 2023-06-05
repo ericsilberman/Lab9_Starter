@@ -69,25 +69,40 @@
     </form>
 
     <section id="error-btns">
-      <button>Console Log</button>
-      <button>Console Error</button>
-      <button>Console Count</button>
-      <button>Console Warn</button>
-      <button>Console Assert</button>
-      <button>Console Clear</button>
-      <button>Console Dir</button>
-      <button>Console dirxml</button>
-      <button>Console Group Start</button>
-      <button>Console Group End</button>
-      <button>Console Table</button>
-      <button>Start Timer</button>
-      <button>End Timer</button>
-      <button>Console Trace</button>
-      <button>Trigger a Global Error</button>
+      <button data-err="log">Console Log</button>
+      <button data-err="error">Console Error</button>
+      <button data-err="count">Console Count</button>
+      <button data-err="warn">Console Warn</button>
+      <button data-err="assert">Console Assert</button>
+      <button data-err="clear">Console Clear</button>
+      <button data-err="dir">Console Dir</button>
+      <button data-err="dirxml">Console dirxml</button>
+      <button data-err="groupS">Console Group Start</button>
+      <button data-err="groupE">Console Group End</button>
+      <button data-err="table">Console Table</button>
+      <button data-err="timerS">Start Timer</button>
+      <button data-err="timerE">End Timer</button>
+      <button data-err="trace">Console Trace</button>
+      <button data-err="globalError">Trigger a Global Error</button>
     </section>
   </main>
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "c23e9ee874f84446acd6ea456b9fc3cf"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
+                            
 
   <script>
+    class secondError extends Error{
+      constructor(message){
+        super(message);
+        this.name = 'secondError';
+      }
+    }
+
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -95,13 +110,88 @@
       let firstNum = document.querySelector('#first-num').value;
       let secondNum = document.querySelector('#second-num').value;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      try{
+        //if firtNum or secondNum is not a number, throw an error
+        if(isNaN(firstNum)){
+          throw new Error('Please enter a number');
+        }
+        if(isNaN(secondNum)){
+          throw new secondError('Please enter a number');
+        }
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      }catch(e){
+        //if error is secondError, log the error
+        if(e instanceof secondError){
+          console.log('secondError');
+        }
+        else if(e instanceof Error){
+          console.log('firstError');
+        }
+        else{
+          console.log('enter a valid number');
+        }
+      }finally{
+        console.log('finally!!!');
+      }
+     
     });
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
     // Start your code here
     // You may move this JS to another file if you wish
+    const handle = (e) =>{
+      switch(e.target?.dataset?.err){
+        case 'log':
+          console.log('log statement');
+          break;
+        case 'error':
+          console.error('error!!');
+          break;
+        case 'count':
+          console.count('click count:');
+          break;
+        case 'warn':
+          console.warn('Do not click me again!');
+          break;
+        case 'assert':
+          console.assert(false, 'assert');
+          break;
+        case 'clear':
+          console.clear();
+          break;
+        case 'dir':
+          console.dir(window);
+          break;
+        case 'dirxml':
+          console.dirxml(document.querySelector('main'));
+          break;
+        case 'groupS':
+          console.group('group');
+          break;
+        case 'groupE':
+          console.groupEnd('group');
+          break;
+        case 'table':
+          console.table(errorBtns);
+          break;
+        case 'timerS':
+          console.time('timer');
+          break;
+        case 'timerE':
+          console.timeEnd('timer');
+          break;
+        case 'trace':
+          console.trace();
+          break;
+        case 'globalError':
+          throw new Error("globalError()");
+          break;
+
+      }
+
+    }
+    errorBtns.forEach(btn => btn.addEventListener('click', handle));
   </script>
 </body>
 
